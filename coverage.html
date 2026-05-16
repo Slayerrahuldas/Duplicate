@@ -8,23 +8,25 @@
     <link rel="stylesheet" href="css/pages.css">
 </head>
 <body>
+
     <header>
         <h1><b>Coverage Dashboard</b></h1>
     </header>
-    
+
     <nav class="navbar">
         <ul>
             <li><a href="index.html"><img src="images/home.png" alt="Home" width="20"></a></li>
             <li><a href="shikhar.html">Shikhar</a></li>
-	    <li><a href="coverage.html">Coverage</a></li>
+            <li><a href="coverage.html">Coverage</a></li>
             <li><a href="launch.html">Launch</a></li>
             <li><a href="channel.html">Channel</a></li>
-	    <li><a href="sales.html">Sales</a></li>
-	    <li><a href="beat.html">Beat Master</a></li>
+            <li><a href="sales.html">Sales</a></li>
+            <li><a href="beat.html">Beat Master</a></li>
         </ul>
     </nav>
-    
+
     <div class="container">
+
         <div class="search-bar-container">
             <input type="text" id="search-bar" placeholder="Search by HUL Code or HUL Outlet Name">
         </div>
@@ -39,26 +41,33 @@
         </div>
 
         <div class="buttons-container">
-            <button id="filter-button">ECO < 1000</button>
+            <button id="filter-button">ECO &lt; 1000</button>
             <button id="reset-button">Reset Filters</button>
         </div>
-    <span id="record-count">Showing 0 records</span>
-        <table id="data-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>HUL Code</th>
-                    <th>HUL Outlet Name</th>
-                    <th>ECO</th>
-                    <th>BTD</th>
-                    <th>Beat</th>
-                </tr>
-            </thead>
-            <tbody id="table-body"></tbody>
-        </table>
-	 <div id="pagination"></div>
-     </div>
+
+        <span id="record-count">Showing 0 records</span>
+
+        <div class="table-wrapper">
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>HUL Code</th>
+                        <th>HUL Outlet Name</th>
+                        <th>ECO</th>
+                        <th>BTD</th>
+                        <th>Beat</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+            </table>
+        </div>
+
+        <div id="pagination"></div>
+
+    </div>
 
     <script src="script/coverage.js"></script>
+
 </body>
 </html>
