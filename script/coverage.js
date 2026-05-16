@@ -1,102 +1,212 @@
+// ─── Constants ───────────────────────────────────────────────────────────────
+const COLUMNS = ["HUL Code", "HUL Outlet Name", "ECO", "BTD", "Beat"];
+const PAGE_SIZE = 100;
+
+// ─── State ────────────────────────────────────────────────────────────────────
 let filterButtonActive = false;
 let jsonData = [];
+let filteredData = [];
+let currentPage = 1;
 
-// Fetch and initialize data
+// ─── Fetch & Initialize ───────────────────────────────────────────────────────
 async function fetchData() {
+    showLoading();
     try {
-        const response = await fetch("json/coverage.json"); // Adjust if needed
+        const response = await fetch("json/coverage.json");
         if (!response.ok) throw new Error("Failed to fetch data.");
         jsonData = await response.json();
         initialize();
     } catch (error) {
         console.error("Error fetching data:", error);
+        showError("Failed to load data. Please refresh the page.");
     }
 }
 
-// Populate table
+// ─── Table Rendering ──────────────────────────────────────────────────────────
 function populateTable(data) {
     const tableBody = document.getElementById("table-body");
     tableBody.innerHTML = "";
 
-    data.forEach((item, index) => {
+    // Update record count
+    updateRecordCount(data.length);
+
+    // Empty state
+    if (data.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="${COLUMNS.length + 1}" class="empty-state">
+                    No records found for the selected filters.
+                </td>
+            </tr>`;
+        updatePaginationControls(0);
+        return;
+    }
+
+    // Paginate
+    const totalPages = Math.ceil(data.length / PAGE_SIZE);
+    currentPage = Math.min(currentPage, totalPages);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageData = data.slice(start, start + PAGE_SIZE);
+
+    pageData.forEach((item, index) => {
         const row = document.createElement("tr");
 
+        // Serial number (descending from total)
         const serialCell = document.createElement("td");
-        serialCell.textContent = data.length - index;
+        serialCell.textContent = data.length - start - index;
         row.appendChild(serialCell);
 
-        const columns = ["HUL Code", "HUL Outlet Name", "ECO", "BTD", "Beat"];
-        columns.forEach((key) => {
+        COLUMNS.forEach((key) => {
             const cell = document.createElement("td");
-            cell.textContent = item[key] !== undefined ? item[key] : "";
+            const value = item[key] !== undefined ? item[key] : "";
+
+            // Highlight ECO < 1000
+            if (key === "ECO") {
+                const ecoVal = parseFloat(value);
+                if (!isNaN(ecoVal) && ecoVal < 1000) {
+                    cell.style.color = "#e74c3c";
+                    cell.style.fontWeight = "600";
+                }
+            }
+
+            cell.textContent = value;
             row.appendChild(cell);
         });
 
         tableBody.appendChild(row);
     });
+
+    updatePaginationControls(totalPages);
 }
 
-// Apply filters and update table
+// ─── Filtering ────────────────────────────────────────────────────────────────
 function applyFilters() {
     const meName = document.getElementById("filter-me-name").value;
     const day = document.getElementById("filter-day").value;
-    const searchQuery = document.getElementById("search-bar").value.toLowerCase();
+    const searchQuery = document.getElementById("search-bar").value.toLowerCase().trim();
 
-    const filteredData = jsonData.filter((row) => {
+    filteredData = jsonData.filter((row) => {
         const ecoValue = parseFloat(row["ECO"]);
 
-        return (
-            (meName === "" || row["ME Name"] === meName) &&
-            (day === "" || row["Day"] === day) &&
-            (searchQuery === "" ||
-                (row["HUL Code"] && row["HUL Code"].toLowerCase().includes(searchQuery)) ||
-                (row["HUL Outlet Name"] && row["HUL Outlet Name"].toLowerCase().includes(searchQuery))) &&
-            (!filterButtonActive || (!isNaN(ecoValue) && ecoValue < 1000))
-        );
+        const matchME = meName === "" || row["ME Name"] === meName;
+        const matchDay = day === "" || row["Day"] === day;
+        const matchSearch =
+            searchQuery === "" ||
+            (row["HUL Code"] && row["HUL Code"].toLowerCase().includes(searchQuery)) ||
+            (row["HUL Outlet Name"] && row["HUL Outlet Name"].toLowerCase().includes(searchQuery));
+        const matchECO = !filterButtonActive || (!isNaN(ecoValue) && ecoValue < 1000);
+
+        return matchME && matchDay && matchSearch && matchECO;
     });
 
+    currentPage = 1; // Reset to first page on filter change
     populateTable(filteredData);
-    updateDropdowns(filteredData);
+    updateDropdowns(); // Always built from full jsonData
 }
 
-// Update dropdowns based on current data
-function updateDropdowns(filteredData) {
-    const meSet = new Set();
-    const daySet = new Set();
+// ─── Dropdowns ────────────────────────────────────────────────────────────────
+function updateDropdowns() {
+    // Built from FULL dataset so options never disappear
+    const meSelected = document.getElementById("filter-me-name").value;
+    const daySelected = document.getElementById("filter-day").value;
 
-    filteredData.forEach((row) => {
-        if (row["ME Name"]) meSet.add(row["ME Name"]);
-        if (row["Day"]) daySet.add(row["Day"]);
-    });
+    const meSet = new Set(jsonData.map((r) => r["ME Name"]).filter(Boolean));
+    const daySet = new Set(jsonData.map((r) => r["Day"]).filter(Boolean));
 
-    populateDropdown("filter-me-name", meSet, "ME Name");
-    populateDropdown("filter-day", daySet, "Day");
+    populateDropdown("filter-me-name", meSet, "ME Name", meSelected);
+    populateDropdown("filter-day", daySet, "Day", daySelected);
 }
 
-// Helper to populate a select dropdown
-function populateDropdown(id, optionsSet, headerName) {
+function populateDropdown(id, optionsSet, headerName, selectedValue = "") {
     const dropdown = document.getElementById(id);
-    const selectedValue = dropdown.value;
     dropdown.innerHTML = `<option value="">${headerName}</option>`;
-
     Array.from(optionsSet)
         .sort()
         .forEach((option) => {
-            dropdown.innerHTML += `<option value="${option}" ${option === selectedValue ? "selected" : ""}>${option}</option>`;
+            const opt = document.createElement("option");
+            opt.value = option;
+            opt.textContent = option;
+            if (option === selectedValue) opt.selected = true;
+            dropdown.appendChild(opt);
         });
 }
 
-// Reset filters
+// ─── Pagination ───────────────────────────────────────────────────────────────
+function updatePaginationControls(totalPages) {
+    const container = document.getElementById("pagination");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (totalPages <= 1) return;
+
+    // Prev button
+    const prev = document.createElement("button");
+    prev.textContent = "← Prev";
+    prev.disabled = currentPage === 1;
+    prev.addEventListener("click", () => {
+        if (currentPage > 1) { currentPage--; populateTable(filteredData); }
+    });
+    container.appendChild(prev);
+
+    // Page info
+    const info = document.createElement("span");
+    info.textContent = ` Page ${currentPage} of ${totalPages} `;
+    container.appendChild(info);
+
+    // Next button
+    const next = document.createElement("button");
+    next.textContent = "Next →";
+    next.disabled = currentPage === totalPages;
+    next.addEventListener("click", () => {
+        if (currentPage < totalPages) { currentPage++; populateTable(filteredData); }
+    });
+    container.appendChild(next);
+}
+
+// ─── Reset ────────────────────────────────────────────────────────────────────
 function resetFilters() {
     filterButtonActive = false;
-    document.getElementById("filter-button").style.backgroundColor = "#007bff";
+    currentPage = 1;
+    const btn = document.getElementById("filter-button");
+    if (btn) btn.style.backgroundColor = "#007bff";
     document.getElementById("search-bar").value = "";
-    document.querySelectorAll("select").forEach((dropdown) => dropdown.value = "");
+    document.querySelectorAll("select").forEach((dropdown) => (dropdown.value = ""));
     applyFilters();
 }
 
-// Debounce helper
-function debounce(func, delay = 300) {
+// ─── UI Helpers ───────────────────────────────────────────────────────────────
+function showLoading() {
+    const tableBody = document.getElementById("table-body");
+    if (tableBody) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="${COLUMNS.length + 1}" class="empty-state">
+                    ⏳ Loading data...
+                </td>
+            </tr>`;
+    }
+}
+
+function showError(message) {
+    const tableBody = document.getElementById("table-body");
+    if (tableBody) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="${COLUMNS.length + 1}" class="empty-state" style="color:#e74c3c;">
+                    ⚠️ ${message}
+                </td>
+            </tr>`;
+    }
+    updateRecordCount(0);
+}
+
+function updateRecordCount(count) {
+    const el = document.getElementById("record-count");
+    if (el) el.textContent = `Showing ${count.toLocaleString()} record${count !== 1 ? "s" : ""}`;
+}
+
+// ─── Debounce ─────────────────────────────────────────────────────────────────
+function debounce(func, delay = 500) {
     let timer;
     return function (...args) {
         clearTimeout(timer);
@@ -104,23 +214,31 @@ function debounce(func, delay = 300) {
     };
 }
 
-// Initialize listeners and display
+// ─── Initialize ───────────────────────────────────────────────────────────────
 function initialize() {
     document.getElementById("reset-button").addEventListener("click", resetFilters);
-    document.getElementById("search-bar").addEventListener("input", debounce(applyFilters));
-    document.querySelectorAll("select").forEach(dropdown =>
+
+    document.getElementById("search-bar").addEventListener(
+        "input",
+        debounce(applyFilters, 500)
+    );
+
+    document.querySelectorAll("select").forEach((dropdown) =>
         dropdown.addEventListener("change", applyFilters)
     );
 
-    document.getElementById("filter-button").addEventListener("click", () => {
-        filterButtonActive = !filterButtonActive;
-        document.getElementById("filter-button").style.backgroundColor = filterButtonActive ? "green" : "#007bff";
-        applyFilters();
-    });
+    const filterBtn = document.getElementById("filter-button");
+    if (filterBtn) {
+        filterBtn.addEventListener("click", () => {
+            filterButtonActive = !filterButtonActive;
+            filterBtn.style.backgroundColor = filterButtonActive ? "#27ae60" : "#007bff";
+            applyFilters();
+        });
+    }
 
-    populateTable(jsonData);
+    updateDropdowns();
     applyFilters();
 }
 
-// Start process
+// ─── Boot ─────────────────────────────────────────────────────────────────────
 fetchData();
