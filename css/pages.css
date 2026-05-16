@@ -123,3 +123,49 @@ table th {
     background-color: #f4f4f4;
     font-weight: bold;
 }
+.empty-state {
+    text-align: center;
+    padding: 32px;
+    color: #888;
+    font-style: italic;
+}
+
+#record-count {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+
+#pagination {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+}
+
+#pagination button {
+    padding: 6px 14px;
+    border: 1px solid #007bff;
+    background: #fff;
+    color: #007bff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.2s, color 0.2s;
+}
+
+#pagination button:hover:not(:disabled) {
+    background: #007bff;
+    color: #fff;
+}
+
+#pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+#pagination span {
+    color: #444;
+}
