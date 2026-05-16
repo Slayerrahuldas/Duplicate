@@ -6,6 +6,57 @@
     <title>GIPSY Coverage</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="css/pages.css">
+
+    <!-- ✅ ADD THIS CSS BLOCK -->
+    <style>
+        .empty-state {
+            text-align: center;
+            padding: 32px;
+            color: #888;
+            font-style: italic;
+        }
+
+        #record-count {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        #pagination {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        #pagination button {
+            padding: 6px 14px;
+            border: 1px solid #007bff;
+            background: #fff;
+            color: #007bff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        #pagination button:hover:not(:disabled) {
+            background: #007bff;
+            color: #fff;
+        }
+
+        #pagination button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        #pagination span {
+            color: #444;
+        }
+    </style>
+
 </head>
 <body>
     <header>
@@ -16,11 +67,11 @@
         <ul>
             <li><a href="index.html"><img src="images/home.png" alt="Home" width="20"></a></li>
             <li><a href="shikhar.html">Shikhar</a></li>
-	    <li><a href="coverage.html">Coverage</a></li>
+            <li><a href="coverage.html">Coverage</a></li>
             <li><a href="launch.html">Launch</a></li>
             <li><a href="channel.html">Channel</a></li>
-	    <li><a href="sales.html">Sales</a></li>
-	    <li><a href="beat.html">Beat Master</a></li>
+            <li><a href="sales.html">Sales</a></li>
+            <li><a href="beat.html">Beat Master</a></li>
         </ul>
     </nav>
     
@@ -39,9 +90,12 @@
         </div>
 
         <div class="buttons-container">
-            <button id="filter-button">ECO < 1000</button>
+            <button id="filter-button">ECO &lt; 1000</button>
             <button id="reset-button">Reset Filters</button>
         </div>
+
+        <!-- ✅ ADD THIS — just above the table -->
+        <span id="record-count">Showing 0 records</span>
 
         <table id="data-table">
             <thead>
@@ -56,6 +110,10 @@
             </thead>
             <tbody id="table-body"></tbody>
         </table>
+
+        <!-- ✅ ADD THIS — just below the table -->
+        <div id="pagination"></div>
+
     </div>
 
     <script src="script/coverage.js"></script>
