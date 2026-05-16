@@ -1,9 +1,10 @@
 body {
     font-family: Arial, sans-serif;
-	margin: 0;
+    margin: 0;
     padding: 0;
     background-color: #f4f4f9;
-	text-align: center;
+    text-align: center;
+    overflow-x: hidden; /* ✅ FIX: prevents horizontal page overflow */
 }
 
 header {
@@ -19,12 +20,16 @@ h1 {
     font-weight: 300;
 }
 
-
+/* ✅ FIX: navbar scrollable horizontally on mobile */
 .navbar {
     background-color: #bbb;
-    height: 30px;
-    overflow: hidden;
+    height: 36px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
 }
+
 .navbar ul {
     list-style-type: none;
     padding: 0;
@@ -34,15 +39,17 @@ h1 {
 }
 
 .navbar li {
-    margin: 10 15px;
+    margin: 0 15px;
 }
 
 .navbar a {
-	margin: 15px;
+    margin: 8px;
     text-decoration: none;
     color: #E74C3C;
     font-size: 1.2em;
     transition: color 0.3s;
+    display: inline-block;
+    line-height: 20px;
 }
 
 .navbar a:hover {
@@ -52,10 +59,11 @@ h1 {
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding-top: 20px;
+    padding: 20px 12px; /* ✅ FIX: side padding so content doesn't touch edges */
     background: white;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
 }
 
 .search-bar-container {
@@ -70,27 +78,31 @@ h1 {
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    box-sizing: border-box;
 }
 
 .filters-container {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
+    gap: 10px;
 }
 
 .filters-container select {
-    width: 22%; /* Adjust width as necessary */
+    width: 22%;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ddd;
     border-radius: 4px;
     background-color: white;
+    box-sizing: border-box;
 }
 
 .buttons-container {
     display: flex;
     justify-content: space-around;
     margin-bottom: 20px;
+    gap: 10px;
 }
 
 button {
@@ -107,10 +119,18 @@ button:hover {
     background-color: #0056b3;
 }
 
+/* ✅ FIX: table scrollable on mobile instead of overflowing */
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    min-width: 500px; /* ✅ ensures table doesn't collapse too small */
 }
 
 table th, table td {
@@ -123,6 +143,7 @@ table th {
     background-color: #f4f4f4;
     font-weight: bold;
 }
+
 .empty-state {
     text-align: center;
     padding: 32px;
@@ -140,9 +161,11 @@ table th {
 #pagination {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
     margin-top: 12px;
     font-size: 0.9rem;
+    flex-wrap: wrap;
 }
 
 #pagination button {
@@ -168,4 +191,43 @@ table th {
 
 #pagination span {
     color: #444;
+}
+
+/* =========================================
+   📱 MOBILE RESPONSIVE — screens ≤ 600px
+   ========================================= */
+@media (max-width: 600px) {
+
+    h1 {
+        font-size: 1.6em; /* ✅ FIX: smaller heading on mobile */
+    }
+
+    #search-bar {
+        width: 90%; /* ✅ FIX: wider search bar on mobile */
+    }
+
+    .filters-container {
+        flex-direction: column; /* ✅ FIX: stack dropdowns vertically */
+        align-items: center;
+    }
+
+    .filters-container select {
+        width: 90%; /* ✅ FIX: full width dropdowns on mobile */
+    }
+
+    .buttons-container {
+        flex-direction: column; /* ✅ FIX: stack buttons vertically */
+        align-items: center;
+    }
+
+    button {
+        width: 90%;
+        padding: 12px 0; /* ✅ FIX: remove huge horizontal padding */
+    }
+
+    /* Keep pagination buttons normal size */
+    #pagination button {
+        width: auto;
+        padding: 6px 14px;
+    }
 }
